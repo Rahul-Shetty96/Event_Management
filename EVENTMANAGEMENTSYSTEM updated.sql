@@ -125,15 +125,27 @@ Select * from COMPETITION
 Insert into EEVENT values('GD','2016-09-15','ISTEVESIT')
 Insert into EEVENT values('BLOOD DONATION CAMP','2016-09-15','SORTVESIT')
 
-
---CONSTRAINTS
-
-
+Select * from EEVENT
+--VIEWS
+--1.Create view which displays competition name and with date
 Create view EVENTCOMP (compname,eventdate)  AS select event_name,event_date from EEVENT
 
-SELECT * FROM EEVENT
 
-1)
+--2.Create view which displays workshop name and with date
+Create view EVENTWKP (wkpname,eventdate,activity,speaker)  AS select event_name,
+event_date,activity,speaker from EEVENT as e JOIN WORKSHOP as w ON e.event_name=w.wkp_name
+
+--ONE QUERY ON VIEW
+--Display workshop name ,activity , speaker of workshop organised by SORTVESIT 
+  
+  Select w.wkpname,w.activity,w.speaker,e.org_name
+  from EVENTWKP as w,EEVENT as e
+  where w.wkpname = e.event_name 
+  and org_name = 'SORTVESIT'
+
+
+
+--Create Trigger to update EEVENT table and COMPETITON table simultanueosly
 
 Create trigger dataentry on EVENTCOMP instead of insert
 as
@@ -152,16 +164,13 @@ end
 
 
 
-
+insert into EVENTWKP values('PYTHON' ,'2016-10-16','Subjects coding ','Parth Sir' )
 insert into EVENTCOMP VALUES('PUZZLESOLVING','2016-09-16')
-
+select * from WORKSHOP
 2)
 
 Select * from EEVENT
 Select * from WORKSHOP
-
-Create view EVENTWKP (wkpname,eventdate,activity,speaker)  AS select event_name,
-event_date,activity,speaker from EEVENT as e JOIN WORKSHOP as w ON e.event_name=w.wkp_name
 
 
 
@@ -179,3 +188,53 @@ insert into EEVENT VALUES(@WKPNAME,@EVENTDATE,@comname)
 insert into WORKSHOP VALUES(@WKPNAME,@ACTIVITY,@speaker)
 
 end
+Select * from COMMITTEE
+sELECT * FROM EEVENT
+
+
+--Assertion(trigger) to check that Council representative cannot participates 
+--in respective Council events
+
+Alter trigger particpatecheck on participates for insert 
+As 
+Begin
+
+Declare  @emailid as varchar(50),@eventname as varchar(50),@comname as varchar(50),@c as int
+Select @emailid =emailid,@eventname =eventname from inserted
+
+Select @comname=org_name from EEVENT where event_name=@eventname 
+Select @c=count(email) from COUNCIL_REPRESENTATIVE WHERE email=@emailid
+if(0>@c)
+  COMMIT
+  ELSE
+  BEGIN
+  Print 'You are a council representive of '+@comname+' So you cannot participate in '
+  +@comname+' events.'
+  ROLLBACK
+  END
+END
+
+
+
+insert into PARTICIPATES values ('deepa.tursani@ves.ac.in' , 'LINUX AND UNIX' )
+select * from PARTICIPATES
+Select * from EEVENT
+select * from COUNCIL_REPRESENTATIVE
+
+
+Alter table COMPETITION add foreign key(winner) references STUDENT 
+
+update COMPETITION
+set winner = 'neeraj.harjani@ves.ac.in'
+Select * from COMPETITION
+
+
+--JOIN 
+--1.Display competiton name and wiiners name using join
+Select c.comp_name,s.name,s.class
+from COMPETITION as c, STUDENT as s
+where c.winner = s.email
+
+--FUNCTION
+--2.Create function which takes class 
+ 
